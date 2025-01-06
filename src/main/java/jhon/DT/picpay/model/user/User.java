@@ -24,7 +24,7 @@ public class User {
 
     private String password;
 
-    private BigDecimal balance = BigDecimal.ZERO;
+    private BigDecimal balance ;
 
     @Enumerated(EnumType.STRING)
     private UserType userType;
