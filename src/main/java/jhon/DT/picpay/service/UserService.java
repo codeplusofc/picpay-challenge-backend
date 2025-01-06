@@ -14,8 +14,8 @@ public class UserService {
     }
 
 
-    public void saveUser(User user){
-        this.userRepository.save(user);
+    public User saveUser(User user){
+        return this.userRepository.save(user);
     }
 
     public User findUserById(User user){
