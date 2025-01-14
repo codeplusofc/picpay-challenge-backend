@@ -7,7 +7,7 @@ import jhon.DT.picpay.repository.TransactionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,12 +20,13 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
 
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
 
-    public TransactionService(TransactionRepository transactionRepository, UserService userService, RestTemplate restTemplate) {
+    public TransactionService(TransactionRepository transactionRepository, UserService userService, WebClient.Builder webClientBuilder) {
         this.transactionRepository = transactionRepository;
         this.userService = userService;
-        this. restTemplate = restTemplate;
+        this.webClient = webClientBuilder.baseUrl("https://util.devi.tools/api/v2").build();
+
     }
 
     public void createTransaction(TransactionDTO transactionDTO) throws Exception {
@@ -55,21 +56,24 @@ public class TransactionService {
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value){
-        ResponseEntity<Map> authorizationResponse = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+        try {
+            Map response = webClient.get()
+                    .uri("/authorize")
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
 
-        if(authorizationResponse.getStatusCode() == HttpStatus.OK){
-
-            if (authorizationResponse.getBody() != null) {
-                String status = (String) authorizationResponse.getBody().get("status");
-                return "success".equalsIgnoreCase(status);
-            } else {
+            if (response != null){
+                String status = (String) response.get("status");
+                return "seccess".equalsIgnoreCase(status);
+            }else {
                 return false;
             }
-
-        }else{
+        }catch (Exception e){
             return false;
         }
     }
+
 
 
 }
