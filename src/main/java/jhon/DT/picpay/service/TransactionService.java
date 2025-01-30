@@ -1,11 +1,10 @@
 package jhon.DT.picpay.service;
 
 import jhon.DT.picpay.dtos.TransactionDTO;
+import jhon.DT.picpay.exceptions.TransactionNotAuthorizedException;
 import jhon.DT.picpay.model.transaction.Transaction;
 import jhon.DT.picpay.model.user.User;
 import jhon.DT.picpay.repository.TransactionRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -38,7 +37,7 @@ public class TransactionService {
 
         boolean isAuthorized = this.authorizeTransaction(sender, transactionDTO.value());
         if (!isAuthorized){
-            throw new Exception("the transaction was not authorized");
+            throw new TransactionNotAuthorizedException("the transaction was not authorized");
         }
 
         Transaction newTransaction = new Transaction();
