@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
@@ -30,8 +31,8 @@ public class TransactionService {
 
     public void createTransaction(TransactionDTO transactionDTO) throws Exception {
 
-        User sender = this.userService.findUserById(transactionDTO.senderId());
-        User receiver = this.userService.findUserById(transactionDTO.receiverId());
+        var sender = this.userService.findUserById(transactionDTO.senderId());
+        var receiver = this.userService.findUserById(transactionDTO.receiverId());
 
         userService.validateTransaction(sender, transactionDTO.value());
 
@@ -55,22 +56,25 @@ public class TransactionService {
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value){
-        try {
+
+        try{
             Map response = webClient.get()
                     .uri("/authorize")
                     .retrieve()
                     .bodyToMono(Map.class)
                     .block();
 
-            if (response != null){
-                String status = (String) response.get("status");
-                return "seccess".equalsIgnoreCase(status);
-            }else {
-                return false;
-            }
+            return isTransactionAuthorized(response);
         }catch (Exception e){
             return false;
         }
+    }
+    public boolean isTransactionAuthorized(Map response){
+        return Optional.ofNullable(response)
+                .map(res -> res.get("status"))
+                .filter(String.class::isInstance)
+                .map(status -> "success".equalsIgnoreCase((String)status))
+                .orElse(false);
     }
 
 
