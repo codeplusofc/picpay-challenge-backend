@@ -40,7 +40,7 @@ public class TransactionService {
             throw new TransactionNotAuthorizedException("the transaction was not authorized");
         }
 
-        Transaction newTransaction = new Transaction();
+        var newTransaction = new Transaction();
         newTransaction.setAmount(transactionDTO.value());
         newTransaction.setSender(sender);
         newTransaction.setReceiver(receiver);

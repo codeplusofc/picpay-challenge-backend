@@ -1,5 +1,6 @@
 package jhon.DT.picpay.service;
 
+import jhon.DT.picpay.exceptions.InsufficientFundsException;
 import jhon.DT.picpay.model.user.User;
 import jhon.DT.picpay.model.user.UserType;
 import jhon.DT.picpay.repository.UserRepository;
@@ -32,7 +33,7 @@ public class UserService {
             throw new Exception("This type of user cannot perform transfers");
         }
         if (sender.getBalance().compareTo(amount) <0){
-            throw new Exception("Insufficient balance to perform this transaction");
+            throw new InsufficientFundsException("Insufficient balance to perform this transaction");
 
         }
     }
