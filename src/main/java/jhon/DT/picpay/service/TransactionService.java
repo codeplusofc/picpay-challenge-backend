@@ -29,7 +29,8 @@ public class TransactionService {
 
     }
 
-    public void createTransaction(TransactionDTO transactionDTO) throws Exception {
+
+    public void createTransaction(TransactionDTO transactionDTO) throws Exception{
 
         var sender = this.userService.findUserById(transactionDTO.senderId());
         var receiver = this.userService.findUserById(transactionDTO.receiverId());
@@ -38,21 +39,28 @@ public class TransactionService {
 
         boolean isAuthorized = this.authorizeTransaction(sender, transactionDTO.value());
         if (!isAuthorized){
-            throw new TransactionNotAuthorizedException("the transaction was not authorized");
+            throw new TransactionNotAuthorizedException("The transaction was not authorized");
         }
 
-        var newTransaction = new Transaction();
-        newTransaction.setAmount(transactionDTO.value());
-        newTransaction.setSender(sender);
-        newTransaction.setReceiver(receiver);
-        newTransaction.setTimestamp(LocalDateTime.now());
-
-        sender.setBalance(sender.getBalance().subtract(transactionDTO.value()));
-        receiver.setBalance(receiver.getBalance().add(transactionDTO.value()));
+        var newTransaction = buildTransaction(sender, receiver, transactionDTO.value());
+        updateBalance(sender, receiver, transactionDTO.value());
 
         this.transactionRepository.save(newTransaction);
         this.userService.saveUser(sender);
         this.userService.saveUser(receiver);
+    }
+
+    private Transaction buildTransaction(User sender, User receiver, BigDecimal amount){
+        var transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setSender(sender);
+        transaction.setReceiver(receiver);
+        transaction.setTimestamp(LocalDateTime.now());
+        return transaction;
+    }
+    private void updateBalance(User sender, User receiver, BigDecimal amount){
+        sender.setBalance(sender.getBalance().subtract(amount));
+        receiver.setBalance(receiver.getBalance().add(amount));
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value){
