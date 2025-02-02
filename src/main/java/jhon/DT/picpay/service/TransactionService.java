@@ -56,7 +56,6 @@ public class TransactionService {
     }
 
     public boolean authorizeTransaction(User sender, BigDecimal value){
-
         try{
             Map response = webClient.get()
                     .uri("/authorize")

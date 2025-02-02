@@ -26,15 +26,21 @@ public class UserService {
         return this.userRepository.findUserById(id).orElseThrow(() -> new RuntimeException("User not f"));
     }
 
+
+    public void validateSanderBalance(User sender, BigDecimal amount) throws InsufficientFundsException {
+        if (sender.getBalance().compareTo(amount)<0){
+            throw new InsufficientFundsException("Insufficient balance to perform this transaction");
+        }
+    }
+
     public void validateTransaction(User sender, BigDecimal amount) throws Exception{
 
         if (sender.getUserType() == UserType.MERCHANT){
             throw new Exception("This type of user cannot perform transfers");
         }
-        if (sender.getBalance().compareTo(amount) <0){
-            throw new InsufficientFundsException("Insufficient balance to perform this transaction");
 
-        }
+        validateSanderBalance(sender, amount);
+
     }
 
 }
