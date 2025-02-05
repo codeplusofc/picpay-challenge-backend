@@ -4,7 +4,7 @@ package jhon.DT.picpay.model.user;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "users")
@@ -13,7 +13,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+    private Long id;
 
     private String fullName;
 
@@ -31,9 +31,10 @@ public class User {
     private UserType userType;
 
 
+    public User() {
+    }
 
-
-    public User(UUID id, String fullName, String document, String email, String password, BigDecimal balance, UserType userType) {
+    public User(Long id, String fullName, String document, String email, String password, BigDecimal balance, UserType userType) {
         this.id = id;
         this.fullName = fullName;
         this.document = document;
@@ -43,11 +44,11 @@ public class User {
         this.userType = userType;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

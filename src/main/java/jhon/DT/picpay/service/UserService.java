@@ -7,7 +7,8 @@ import jhon.DT.picpay.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.util.List;
+
 
 @Service
 public class UserService {
@@ -18,29 +19,35 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User saveUser(User user){
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
+    }
+
+    public User saveUser(User user) {
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+        if (userRepository.existsByDocument(user.getDocument())) {
+            throw new IllegalArgumentException("Document already registered");
+        }
         return this.userRepository.save(user);
     }
 
-    public User findUserById(UUID id) throws Exception{
-        return this.userRepository.findUserById(id).orElseThrow(() -> new RuntimeException("User not f"));
+    public User findUserById(Long id) throws Exception{
+        return this.userRepository.findUserById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-
-    public void validateSanderBalance(User sender, BigDecimal amount) throws InsufficientFundsException {
+    public void validateSenderBalance(User sender, BigDecimal amount) throws InsufficientFundsException {
         if (sender.getBalance().compareTo(amount)<0){
             throw new InsufficientFundsException("Insufficient balance to perform this transaction");
         }
     }
 
     public void validateTransaction(User sender, BigDecimal amount) throws Exception{
-
         if (sender.getUserType() == UserType.MERCHANT){
-            throw new Exception("This type of user cannot perform transfers");
+            throw new IllegalArgumentException("This type of user cannot perform transfers");
         }
-
-        validateSanderBalance(sender, amount);
-
+        validateSenderBalance(sender, amount);
     }
 
 }
