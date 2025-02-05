@@ -6,7 +6,7 @@ import jhon.DT.picpay.model.user.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "transactions")
@@ -14,7 +14,7 @@ public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+    private Long id;
 
     private BigDecimal amount;
 
@@ -28,7 +28,7 @@ public class Transaction {
 
     private LocalDateTime timestamp;
 
-    public Transaction(UUID id, BigDecimal amount, User sender, User receiver, LocalDateTime timestamp) {
+    public Transaction(Long id, BigDecimal amount, User sender, User receiver, LocalDateTime timestamp) {
         this.id = id;
         this.amount = amount;
         this.sender = sender;
@@ -39,11 +39,11 @@ public class Transaction {
     public Transaction() {
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
