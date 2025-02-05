@@ -36,6 +36,9 @@ public class Transaction {
         this.timestamp = timestamp;
     }
 
+    public Transaction() {
+    }
+
     public UUID getId() {
         return id;
     }
