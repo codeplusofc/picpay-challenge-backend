@@ -1,5 +1,6 @@
 package jhon.DT.picpay.service;
 
+import jakarta.transaction.Transactional;
 import jhon.DT.picpay.dtos.TransactionDTO;
 import jhon.DT.picpay.exceptions.TransactionNotAuthorizedException;
 import jhon.DT.picpay.model.transaction.Transaction;
@@ -22,33 +23,50 @@ public class TransactionService {
 
     private final WebClient webClient;
 
-    public TransactionService(TransactionRepository transactionRepository, UserService userService, WebClient.Builder webClientBuilder) {
+    private final NotificationService notificationService;
+
+    public TransactionService(TransactionRepository transactionRepository, UserService userService, WebClient.Builder webClientBuilder, NotificationService notificationService) {
         this.transactionRepository = transactionRepository;
         this.userService = userService;
         this.webClient = webClientBuilder.baseUrl("https://util.devi.tools/api/v2").build();
 
+        this.notificationService = notificationService;
     }
 
+    @Transactional
+    public Transaction createTransaction(TransactionDTO transactionDTO) throws Exception {
+        if (transactionDTO.value() == null) {
+            throw new IllegalArgumentException("Amount cannot be null");
+        }
 
-    public void createTransaction(TransactionDTO transactionDTO) throws Exception{
-
-        var sender = this.userService.findUserById(transactionDTO.senderId());
-        var receiver = this.userService.findUserById(transactionDTO.receiverId());
+        var sender = userService.findUserById(transactionDTO.senderId());
+        var receiver = userService.findUserById(transactionDTO.receiverId());
 
         userService.validateTransaction(sender, transactionDTO.value());
 
-        boolean isAuthorized = this.authorizeTransaction(sender, transactionDTO.value());
-        if (!isAuthorized){
+        boolean isAuthorized = authorizeTransaction(sender, transactionDTO.value());
+        if (!isAuthorized) {
             throw new TransactionNotAuthorizedException("The transaction was not authorized");
         }
 
         var newTransaction = buildTransaction(sender, receiver, transactionDTO.value());
         updateBalance(sender, receiver, transactionDTO.value());
 
-        this.transactionRepository.save(newTransaction);
-        this.userService.saveUser(sender);
-        this.userService.saveUser(receiver);
+        transactionRepository.save(newTransaction);
+        userService.saveUser(sender);
+        userService.saveUser(receiver);
+
+        try {
+            notificationService.sendNotification(sender, "Transaction completed successfully");
+            notificationService.sendNotification(receiver, "Transaction received successfully");
+        } catch (Exception e) {
+            System.err.println("Falha ao enviar notificação: " + e.getMessage());
+            // Aqui você pode logar o erro ou até mesmo armazenar para enviar mais tarde
+        }
+
+        return newTransaction;
     }
+
 
     private Transaction buildTransaction(User sender, User receiver, BigDecimal amount){
         var transaction = new Transaction();
